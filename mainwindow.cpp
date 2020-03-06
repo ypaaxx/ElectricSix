@@ -13,8 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ms.append(13, 0);
 
-    coeff = &nom;
-
     serial = new QSerialPort();
     serial->setBaudRate(QSerialPort::Baud9600);
     serial->setDataBits(QSerialPort::Data8);

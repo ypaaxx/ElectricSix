@@ -36,22 +36,7 @@ class MainWindow : public QMainWindow
     QVector <qreal> *coeff;
     
     qreal rpm[6];
-    QTextStream *output = nullptr;
-    
-    QVector <qreal> nom  = {1, 1, 1, 1, 1, 1};
-
-    QVector <qreal> y1  = {0.9, 1.112, 0.9, 1.08, 0.9, 1.08};
-    QVector <qreal> y2  = {0.8, 1.204, 0.8, 1.147, 0.8, 1.147};
-    QVector <qreal> y3  = {0.7, 1.28, 0.7, 1.203, 0.7, 1.203};
-
-    QVector <qreal> x1  = {0.9, 0.9, 0.9, 1.046, 1.175, 1.046};
-    QVector <qreal> x2  = {0.8, 0.8, 0.8, 1.086, 1.311, 1.086};
-    QVector <qreal> x3  = {0.7, 0.7, 0.7, 1.12, 1.421, 1.12};
-
-    QVector <qreal> z1  = {0.9, 1, 1.091, 1.091, 1, 0.9};
-    QVector <qreal> z2  = {0.8, 1, 1.166, 1.166, 1, 0.8};
-    QVector <qreal> z3  = {0.7, 1, 1.229, 1.229, 1, 0.7};
-    
+    QTextStream *output = nullptr;    
 public:
     
     bool findArduino()
