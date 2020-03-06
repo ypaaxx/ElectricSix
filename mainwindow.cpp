@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Pid::changeKp(ui->doubleSpinBox->value());
     Pid::changeKd(ui->doubleSpinBox_2->value());
     Pid::changeKi(ui->doubleSpinBox_3->value());
+    Pid::setMax(2300);
+    Pid::setMin(800);
 
     if (findArduino())
     {

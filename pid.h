@@ -8,15 +8,22 @@ class Pid : public QObject
 {
     Q_OBJECT
 
-    static double Kp;
-    static double Kd;
-    static double Ki;
+    // Константы
+    static qreal Kp;
+    static qreal Kd;
+    static qreal Ki;
 
-    const double T = 1; //s
+    static qreal uMax;
+    static qreal uMin;
 
-    double P, D, I;
+    const qreal T = 1; //s
 
-    double e_old;
+    qreal P, D, I;
+
+    qreal e_old;
+
+    //Ограничение по сигналу
+    static qreal u_max;
 
 public:
     explicit Pid(QObject *parent = nullptr);
@@ -24,28 +31,32 @@ public:
 signals:
 
 public slots:
-    double u(double e){
+    qreal u(qreal e){
 
+        //Периодическое обнуление интегрирования
         static quint8 count=0;
         if(++count > 30) {
             I = 0;
             count = 0;
         }
 
-        P = Kp * e;
-        D = Kd * (e - e_old) / T;
-        I += Ki * e * T / 100;
-
+        P = Kp * e;                 //Пропорциональный
+        D = Kd * (e - e_old) / T;   //Дифференциальный
+        I += Ki * e * T / 100;      //Интегрирующий
         e_old = e;
 
-        //qDebug() << "pid: " << P << D << I;
-        //qDebug() << "pid: "<< P + D + I;
-        return P + D + I;
+        qreal u = P + D + I;
+        //Ограничение сигнала
+        if (u > uMax) u = uMax;
+        if (u < uMin) u = uMin;
+        return u;
     }
 
-    static void changeKp(double kp){Kp=kp;}
-    static void changeKd(double kd){Kd=kd;}
-    static void changeKi(double ki){Ki=ki;}
+    static void changeKp(qreal kp){Kp=kp;}
+    static void changeKd(qreal kd){Kd=kd;}
+    static void changeKi(qreal ki){Ki=ki;}
+    static void setMax(qreal _uMax){uMax=_uMax;}
+    static void setMin(qreal _uMin){uMin=_uMin;}
 };
 
 #endif // PID_H

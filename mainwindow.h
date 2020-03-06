@@ -28,7 +28,6 @@ class MainWindow : public QMainWindow
     QSerialPort *serial;
     QTimer *timer;
     
-    //unsigned char ms[6] = {0,0,0,0,0,0};
     QByteArray ms;
     Pid pid[6];
     
@@ -81,12 +80,6 @@ private slots:
             startTimer->start();
             connect(startTimer, SIGNAL(timeout()), this, SLOT(start()));
         }
-        
-        static quint8 i = 0;
-        while (i<6){
-            //u[i] = 1500;
-        }
-        
     }
     
 private:
