@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>278</width>
-    <height>309</height>
+    <width>266</width>
+    <height>353</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -155,7 +155,7 @@
         <number>100</number>
        </property>
        <property name="value">
-        <number>2183</number>
+        <number>1500</number>
        </property>
        <property name="displayIntegerBase">
         <number>10</number>
@@ -226,13 +226,45 @@
      <string>hz</string>
     </property>
    </widget>
+   <widget class="QDoubleSpinBox" name="doubleSpinBox_engine_n">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>250</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>5</number>
+    </property>
+    <property name="stepType">
+     <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+    </property>
+    <property name="value">
+     <double>0.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>250</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>s</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>278</width>
+     <width>266</width>
      <height>21</height>
     </rect>
    </property>

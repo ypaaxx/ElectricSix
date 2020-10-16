@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 # Для сборки:
-# C:\Qt\5.14.1\mingw73_32\bin\windeployqt.exe "C:\Users\fura\Documents\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_14_1_MinGW_32_bit-Release\ElectricSix.exe"
+# C:\Qt\5.14.2\mingw73_32\bin\windeployqt.exe "D:\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_14_2_MinGW_32_bit-Release\release\ElectricSix.exe"
 
 QT       += core gui serialport
 
@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += main.cpp\
+    config.cpp \
         mainwindow.cpp \
     pid.cpp
 
 HEADERS  += mainwindow.h \
+    config.h \
     pid.h
 
 FORMS    += mainwindow.ui

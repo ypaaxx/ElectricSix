@@ -1,11 +1,35 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+bool MainWindow::findArduino()
+{
+    /* Поиск порта с ардуинкой */
+    QList <QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+    if(ports.isEmpty()){
+        qDebug() << "Нет COM портов ;-(";
+        return 0;
+    }
+
+    for (QSerialPortInfo& port: ports){
+        if ( port.hasVendorIdentifier() )
+            if ((port.vendorIdentifier() == 0x2341)
+                    || (port.vendorIdentifier() == 0x1A86)){
+                qDebug() << "Base found on" << port.portName();
+                serial->setPort(port);
+                return serial->open(QIODevice::ReadWrite);
+            }
+    }
+    //Происходит если ничего не нашёл
+    return 0;
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+
 
     setWindowTitle("ElectricSix");
     timer = new QTimer();
@@ -19,6 +43,14 @@ MainWindow::MainWindow(QWidget *parent) :
     serial->setStopBits(QSerialPort::OneStop);
     serial->setParity(QSerialPort::NoParity);
     serial->setFlowControl(QSerialPort::NoFlowControl);
+
+    config = new Config(this);
+
+    ui->doubleSpinBox->setValue(config->kp());
+    ui->doubleSpinBox_2->setValue(config->kd());
+    ui->doubleSpinBox_3->setValue(config->ki());
+    nEngine = config->ks();
+    ui->doubleSpinBox_engine_n->setValue(nEngine);
 
     Pid::changeKp(ui->doubleSpinBox->value());
     Pid::changeKd(ui->doubleSpinBox_2->value());
@@ -39,10 +71,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
-/* Происходит остановка всех двигателей, закрытие файлов */
+
 MainWindow::~MainWindow()
 {
-
+    /* Происходит остановка всех двигателей, закрытие файлов */
     timer->stop();
     
     for(quint8 i = 0; i<12;){   //Остановка всех двигателей при выходе из программы
@@ -54,6 +86,7 @@ MainWindow::~MainWindow()
     serial->waitForBytesWritten(300);
     
     if(output != nullptr) output->device()->close();
+    config->close();
     qDebug() << "Exit";
     delete ui;
 }
@@ -85,7 +118,7 @@ void MainWindow::serialRead(){
         hz[i] = mess.at(2*i) << 8;
         hz[i] += mess.at(2*i + 1) & 0xFF;
         hz[i] >>= 1;
-        rpm[i] = hz[i] * 8.38542;
+        rpm[i] = hz[i] * nEngine;
         qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
 
@@ -135,17 +168,26 @@ void MainWindow::serialRead(){
 void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
 {
     Pid::changeKp(arg1);
+    config->setKp(arg1);
 }
 void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
 {
     Pid::changeKd(arg1);
+    config->setKd(arg1);
 }
 void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
 {
     Pid::changeKi(arg1);
+    config->setKi(arg1);
 }
 
 void MainWindow::on_spinBox_editingFinished()
 {
     nominalRpm = ui->spinBox->value();
+}
+
+void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
+{
+    nEngine = arg1;
+    config->setS(nEngine);
 }

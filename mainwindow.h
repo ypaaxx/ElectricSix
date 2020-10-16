@@ -16,6 +16,7 @@
 #include <QTime>
 
 #include <pid.h>
+#include <config.h>
 
 namespace Ui {
 class MainWindow;
@@ -33,31 +34,15 @@ class MainWindow : public QMainWindow
     
     qreal nominalRpm;
     QVector <qreal> *coeff;
+    qreal nEngine = 3040.0/360.0; // Коэффициент скольжения или типа того. Fr*nEngine = rpm;
     
     qreal rpm[6];
-    QTextStream *output = nullptr;    
+    QTextStream *output = nullptr;
+
+    Config* config;
 public:
     
-    bool findArduino()
-    {
-        /* Поиск порта с ардуинкой */
-        QList <QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
-        if(ports.isEmpty()){
-            qDebug() << "Нет COM портов ;-(";
-            return 0;
-        }
-        
-        for (QSerialPortInfo& port: ports){
-            if ( port.hasVendorIdentifier() )
-                if ((port.vendorIdentifier() == 0x2341)
-                        || (port.vendorIdentifier() == 0x1A86))
-                    qDebug() << "Base found on" << port.portName();
-            serial->setPort(port);
-            return serial->open(QIODevice::ReadWrite);
-        }
-        //Происходит если ничего не нашёл
-        return 0;
-    }
+    bool findArduino();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     
@@ -82,6 +67,8 @@ private slots:
         }
     }
     
+    void on_doubleSpinBox_engine_n_valueChanged(double arg1);
+
 private:
     char crc8(const char *array, quint8 len)
     {
