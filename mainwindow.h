@@ -32,7 +32,7 @@ class MainWindow : public QMainWindow
     QByteArray ms;
     Pid pid[6];
     
-    qreal nominalRpm;
+    qreal nominalRpm = 1000;
     QVector <qreal> *coeff;
     qreal nEngine = 3040.0/360.0; // Коэффициент скольжения или типа того. Fr*nEngine = rpm;
     

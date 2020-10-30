@@ -10,12 +10,14 @@
 class Config : public QObject
 {
     Q_OBJECT
-    QFile config;
+    QFile *config;
     QMap <QString, qreal> *param ;
 
     qreal Kp, Kd, Ki, s;
 public:
-    explicit Config(QObject *parent = nullptr){
+    explicit Config(QObject *parent = nullptr, QMap <QString, qreal> *param = nullptr) {
+        this->param = param;
+        config = new QFile(parent);
         read();
     };
 
@@ -23,20 +25,23 @@ public:
         close();
     };
 
+    void setMap(QMap <QString, qreal> *param){
+        this->param = param;
+    }
     void read(QString name = "config.txt"){
-        config.setFileName(name);
-        if (!config.open(QFile::ReadWrite)){
+        config->setFileName(name);
+        if (!config->open(QFile::ReadWrite)){
                   qDebug() << "config file error";
                   return;
         }
         qDebug() << "config file "<< name;
 
-        if (!config.size())
+        if (!config->size())
             makeFile();
-        
+        param->~QMap();
         param = new QMap <QString, qreal>;
 
-        QTextStream stream(&config);
+        QTextStream stream(config);
         while (!stream.atEnd())
         {
             QString str = stream.readLine(1024);
@@ -61,16 +66,19 @@ public:
 
     //Создание файла с нашими константами
     void makeFile(qreal Kp = 0.03, qreal Kd = 0.02, qreal Ki = 0.015, qreal s = 8.38542){
-        config.resize(0);
-        QTextStream stream(&config);
-        qDebug() << "write config file " << config.fileName();
-        stream << "Kp " + QString::number(Kp) << endl;
-        stream << "Kd " + QString::number(Kd) << endl;
-        stream << "Ki " + QString::number(Ki) << endl;
-        stream << "s " + QString::number(s) << endl;
+        config->resize(0);
+        QTextStream stream(config);
+        qDebug() << "write config file " << config->fileName();
+        stream << "Kp " + QString::number(Kp) << Qt::endl;
+        stream << "Kd " + QString::number(Kd) << Qt::endl;
+        stream << "Ki " + QString::number(Ki) << Qt::endl;
+        stream << "s "  + QString::number(s)  << Qt::endl;
     }
-
+    qreal coeff(QString nameCoeff){
+        return param->value(nameCoeff);
+    }
     qreal kp(){
+        param->value("Kp");
         return Kp;
     }
     qreal kd(){
@@ -101,7 +109,7 @@ public:
 
     void close(){
         makeFile(Kp, Kd, Ki, s);
-        config.close();
+        config->close();
     }
 
 signals:

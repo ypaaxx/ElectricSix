@@ -5,6 +5,9 @@
 #-------------------------------------------------
 # Для сборки:
 # C:\Qt\5.14.2\mingw73_32\bin\windeployqt.exe "D:\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_14_2_MinGW_32_bit-Release\release\ElectricSix.exe"
+# C:\Qt\5.14.2\mingw73_64\bin\windeployqt.exe "D:\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_14_2_MinGW_64_bit-Release\release\ElectricSix.exe"
+# C:\Qt\5.15.1\mingw81_32\bin\windeployqt.exe "D:\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_15_1_MinGW_32_bit-Release\release\ElectricSix.exe"
+
 
 QT       += core gui serialport
 

@@ -11,13 +11,14 @@ bool MainWindow::findArduino()
     }
 
     for (QSerialPortInfo& port: ports){
-        if ( port.hasVendorIdentifier() )
+        if ( port.hasVendorIdentifier() ){
             if ((port.vendorIdentifier() == 0x2341)
                     || (port.vendorIdentifier() == 0x1A86)){
                 qDebug() << "Base found on" << port.portName();
                 serial->setPort(port);
                 return serial->open(QIODevice::ReadWrite);
             }
+        }
     }
     //Происходит если ничего не нашёл
     return 0;
@@ -29,9 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-
-    setWindowTitle("ElectricSix");
+    setWindowTitle("ElectricUno");
     timer = new QTimer();
     timer->setInterval(1000);
 
@@ -44,7 +43,11 @@ MainWindow::MainWindow(QWidget *parent) :
     serial->setParity(QSerialPort::NoParity);
     serial->setFlowControl(QSerialPort::NoFlowControl);
 
-    config = new Config(this);
+    auto param = new QMap <QString, qreal>({{"Kp", 0.03},
+                                  {"Kd", 0.02},
+                                  {"Ki", 0.015},
+                                  {"s", 8.444}});
+    config = new Config(this, param);
 
     ui->doubleSpinBox->setValue(config->kp());
     ui->doubleSpinBox_2->setValue(config->kd());
@@ -128,7 +131,7 @@ void MainWindow::serialRead(){
 
     static qreal needRPM[6];
     for (quint8 i = 0; i < 6; i++){
-        needRPM[i] = ui->spinBox->value()*coeff->at(i);
+        needRPM[i] = ui->spinBox->value();
         qDebug() << "i:" << needRPM[i] << " need";
     }
 

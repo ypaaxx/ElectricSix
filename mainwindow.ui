@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>266</width>
-    <height>353</height>
+    <width>265</width>
+    <height>316</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
       <x>10</x>
       <y>160</y>
       <width>111</width>
-      <height>81</height>
+      <height>100</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -121,6 +121,26 @@
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Kp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>s</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_engine_n">
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="stepType">
+        <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -226,45 +246,13 @@
      <string>hz</string>
     </property>
    </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBox_engine_n">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>250</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="decimals">
-     <number>5</number>
-    </property>
-    <property name="stepType">
-     <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
-    </property>
-    <property name="value">
-     <double>0.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>250</y>
-      <width>16</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>s</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>266</width>
+     <width>265</width>
      <height>21</height>
     </rect>
    </property>
