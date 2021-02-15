@@ -137,7 +137,8 @@ void MainWindow::serialRead(){
 
     static qreal err[6];
     for (quint8 i = 0; i < 6; i++){
-        err[i] = fabs(pow(1 + (needRPM[i] - rpm[i])/needRPM[i], 2)*100 - 100);
+        err[i] = fabs(needRPM[i] - rpm[i])/needRPM[i]*100;
+        //errT[i] = fabs(pow(1 + (needRPM[i] - rpm[i])/needRPM[i], 2)*100 - 100); //Ошибка тяги по квадрату частоты
     }
     ui->prErr1->setText(QString::number(err[0], 'f', 1) + "%");
     if(err[0] < 2)  {
@@ -193,4 +194,11 @@ void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
 {
     nEngine = arg1;
     config->setS(nEngine);
+}
+
+//Обнуление интегрирующей ошибки при переключении
+void MainWindow::on_radioButton_toggled(bool checked)
+{
+    if(checked)
+        pid[0].resetI();
 }

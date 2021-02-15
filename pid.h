@@ -34,11 +34,11 @@ public slots:
     qreal u(qreal e){
 
         //Периодическое обнуление интегрирования
-        static quint8 count=0;
-        if(++count > 30) {
-            I = 0;
-            count = 0;
-        }
+//        static quint8 count=0;
+//        if(++count > 30) {
+//            I = 0;
+//            count = 0;
+//        }
 
         P = Kp * e;                 //Пропорциональный
         D = Kd * (e - e_old) / T;   //Дифференциальный
@@ -57,6 +57,9 @@ public slots:
     static void changeKi(qreal ki){Ki=ki;}
     static void setMax(qreal _uMax){uMax=_uMax;}
     static void setMin(qreal _uMin){uMin=_uMin;}
+    void resetI(){
+        I = 0;
+    }
 };
 
 #endif // PID_H

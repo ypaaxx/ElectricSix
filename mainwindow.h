@@ -69,6 +69,8 @@ private slots:
     
     void on_doubleSpinBox_engine_n_valueChanged(double arg1);
 
+    void on_radioButton_toggled(bool checked);
+
 private:
     char crc8(const char *array, quint8 len)
     {
