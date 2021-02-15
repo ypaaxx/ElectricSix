@@ -7,6 +7,8 @@
 
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QDebug>
 #include <QTimer>
 #include <QByteArray>
@@ -27,6 +29,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
     QSerialPort *serial;
+    QTcpServer *server;
+    QDataStream *stream;
+    QTcpSocket *socket;
+    //QList <QTcpSocket*> sockets;
     QTimer *timer;
     
     QByteArray ms;
@@ -35,6 +41,7 @@ class MainWindow : public QMainWindow
     qreal nominalRpm = 1000;
     QVector <qreal> *coeff;
     qreal nEngine = 3040.0/360.0; // Коэффициент скольжения или типа того. Fr*nEngine = rpm;
+    qreal nMax = 2500; //Максимальная частота. превышение должно пресекаться
     
     qreal rpm[6];
     QTextStream *output = nullptr;
@@ -66,6 +73,9 @@ private slots:
             connect(startTimer, SIGNAL(timeout()), this, SLOT(start()));
         }
     }
+    void stop();
+
+    void newConnect();
     
     void on_doubleSpinBox_engine_n_valueChanged(double arg1);
 

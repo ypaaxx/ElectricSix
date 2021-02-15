@@ -43,6 +43,12 @@ MainWindow::MainWindow(QWidget *parent) :
     serial->setParity(QSerialPort::NoParity);
     serial->setFlowControl(QSerialPort::NoFlowControl);
 
+    server = new QTcpServer();
+    int const PORT = 48654;
+    server->listen(QHostAddress::LocalHost, PORT);
+    connect(server, SIGNAL(newConnection()), this, SLOT(newConnect()));
+    stream = new QDataStream();
+
     auto param = new QMap <QString, qreal>({{"Kp", 0.03},
                                   {"Kd", 0.02},
                                   {"Ki", 0.015},
@@ -94,6 +100,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 /* По срабатыванию таймера отправляет в серийный порт массив команд */
 void MainWindow::timeout(){
     qDebug() << "timeout";
@@ -122,8 +129,11 @@ void MainWindow::serialRead(){
         hz[i] += mess.at(2*i + 1) & 0xFF;
         hz[i] >>= 1;
         rpm[i] = hz[i] * nEngine;
+        if (rpm[i]>nMax) stop();
         qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
+
+    *stream << rpm[0];
 
     ui->hz_1->setText( QString::number(hz[0]) + " Hz");
     ui->lcdNumber->display(rpm[0]);
@@ -190,6 +200,26 @@ void MainWindow::on_spinBox_editingFinished()
     nominalRpm = ui->spinBox->value();
 }
 
+void MainWindow::stop(){
+    for(quint8 i = 0; i<12;){   //Остановка всех двигателей
+        ms[i++] = 800 >> 8;
+        ms[i++] = 800 & 0xFF;
+    }
+    ms[12] = crc8(ms, 12);
+    serial->write(ms);
+    serial->waitForBytesWritten(300);
+
+    ui->spinBox_2->setValue(800);
+    ui->radioButton_2->setDown(1);
+}
+
+void MainWindow::newConnect()
+{
+    socket = server->nextPendingConnection();
+    stream->setDevice(socket);
+    qDebug() << "ПОДКЛЮЧЕНИЕ TCP";
+}
+
 void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
 {
     nEngine = arg1;
@@ -200,5 +230,6 @@ void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
 void MainWindow::on_radioButton_toggled(bool checked)
 {
     if(checked)
-        pid[0].resetI();
+        for(auto &p : pid)
+            p.resetI();
 }

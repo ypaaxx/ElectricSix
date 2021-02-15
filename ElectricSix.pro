@@ -9,7 +9,7 @@
 # C:\Qt\5.15.1\mingw81_32\bin\windeployqt.exe "D:\ProgramsAndSomeScripts\ElectricSix\build-ElectricSix-Desktop_Qt_5_15_1_MinGW_32_bit-Release\release\ElectricSix.exe"
 
 
-QT       += core gui serialport
+QT       += core gui serialport network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
