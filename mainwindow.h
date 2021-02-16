@@ -30,6 +30,7 @@ class MainWindow : public QMainWindow
     
     QSerialPort *serial;
     QTcpServer *server;
+    int const PORT = 48654;
     QDataStream *stream;
     QTcpSocket *socket;
     //QList <QTcpSocket*> sockets;
@@ -37,6 +38,7 @@ class MainWindow : public QMainWindow
     
     QByteArray ms;
     Pid pid[6];
+    qreal needRPM[6];
     
     qreal nominalRpm = 1000;
     QVector <qreal> *coeff;
@@ -80,6 +82,8 @@ private slots:
     void on_doubleSpinBox_engine_n_valueChanged(double arg1);
 
     void on_radioButton_toggled(bool checked);
+
+    void on_spinBoxRPM_editingFinished();
 
 private:
     char crc8(const char *array, quint8 len)

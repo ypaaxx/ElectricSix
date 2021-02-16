@@ -44,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
     serial->setFlowControl(QSerialPort::NoFlowControl);
 
     server = new QTcpServer();
-    int const PORT = 48654;
     server->listen(QHostAddress::LocalHost, PORT);
     connect(server, SIGNAL(newConnection()), this, SLOT(newConnect()));
     stream = new QDataStream();
@@ -66,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Pid::changeKi(ui->doubleSpinBox_3->value());
     Pid::setMax(2300);
     Pid::setMin(800);
+
+    needRPM[0] = ui->spinBoxRPM->value();
 
     if (findArduino())
     {
@@ -138,13 +139,6 @@ void MainWindow::serialRead(){
     ui->hz_1->setText( QString::number(hz[0]) + " Hz");
     ui->lcdNumber->display(rpm[0]);
 
-
-    static qreal needRPM[6];
-    for (quint8 i = 0; i < 6; i++){
-        needRPM[i] = ui->spinBox->value();
-        qDebug() << "i:" << needRPM[i] << " need";
-    }
-
     static qreal err[6];
     for (quint8 i = 0; i < 6; i++){
         err[i] = fabs(needRPM[i] - rpm[i])/needRPM[i]*100;
@@ -152,7 +146,9 @@ void MainWindow::serialRead(){
     }
     ui->prErr1->setText(QString::number(err[0], 'f', 1) + "%");
     if(err[0] < 2)  {
-       // Чтото должно было произойти...
+        ui->prErr1->setStyleSheet("color: green");
+    }else{
+        ui->prErr1->setStyleSheet("color: red");
     }
 
     static quint16 u[6];
@@ -166,7 +162,7 @@ void MainWindow::serialRead(){
         }
     } else {
         for (quint8 i = 0; i < 6; i++)
-            u[i] = ui->spinBox_2->value();
+            u[i] = ui->spinBoxMCS->value();
     }
     ui->label_4->setNum(u[0]);
 
@@ -197,7 +193,7 @@ void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
 
 void MainWindow::on_spinBox_editingFinished()
 {
-    nominalRpm = ui->spinBox->value();
+    nominalRpm = ui->spinBoxRPM->value();
 }
 
 void MainWindow::stop(){
@@ -209,7 +205,7 @@ void MainWindow::stop(){
     serial->write(ms);
     serial->waitForBytesWritten(300);
 
-    ui->spinBox_2->setValue(800);
+    ui->spinBoxMCS->setValue(800);
     ui->radioButton_2->setDown(1);
 }
 
@@ -232,4 +228,10 @@ void MainWindow::on_radioButton_toggled(bool checked)
     if(checked)
         for(auto &p : pid)
             p.resetI();
+}
+
+void MainWindow::on_spinBoxRPM_editingFinished()
+{
+    needRPM[0] = ui->spinBoxRPM->value();
+    qDebug() << "0:" << needRPM[0] << " need";
 }
