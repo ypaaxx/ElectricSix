@@ -8,7 +8,6 @@ qreal Pid::uMin = -100;
 
 Pid::Pid(QObject *parent) : QObject(parent)
 {
-    e_old = 0;
     P = 0;
     D = 0;
     I = 0;

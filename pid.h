@@ -20,8 +20,6 @@ class Pid : public QObject
 
     qreal P, D, I;
 
-    qreal e_old;
-
     //Ограничение по сигналу
     static qreal u_max;
 
@@ -32,17 +30,12 @@ signals:
 
 public slots:
     qreal u(qreal e){
-
-        //Периодическое обнуление интегрирования
-//        static quint8 count=0;
-//        if(++count > 30) {
-//            I = 0;
-//            count = 0;
-//        }
+        static qreal e_old = 0;
 
         P = Kp * e;                 //Пропорциональный
         D = Kd * (e - e_old) / T;   //Дифференциальный
         I += Ki * e * T / 100;      //Интегрирующий
+
         e_old = e;
 
         qreal u = P + D + I;

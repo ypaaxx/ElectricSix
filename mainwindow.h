@@ -44,7 +44,7 @@ class MainWindow : public QMainWindow
     qreal nominalRpm = 1000;
     QVector <qreal> *coeff;
     qreal nEngine = 3040.0/360.0; // Коэффициент скольжения или типа того. Fr*nEngine = rpm;
-    qreal nMax = 1700; //Максимальная частота. превышение должно пресекаться
+    qreal nMax = 3500; //Максимальная частота. превышение должно пресекаться
     
     quint16 rpm[6];
     quint16 u[6];

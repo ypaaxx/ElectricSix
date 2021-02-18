@@ -144,7 +144,7 @@ void MainWindow::serialRead(){
         hz[i] += mess.at(2*i + 1) & 0xFF;
         hz[i] >>= 1;
         rpm[i] = hz[i] * nEngine;
-        if (rpm[i] > nMax) stop();
+        //if (rpm[i] > nMax) stop();
         qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
 
@@ -160,7 +160,7 @@ void MainWindow::serialRead(){
         err[i] = fabs(needRPM[i] - rpm[i])/needRPM[i]*100;
     }
     ui->prErr1->setText(QString::number(err[0], 'f', 1) + "%");
-    if(err[0] < 2){
+    if(err[0] < 1.5){
         ui->prErr1->setStyleSheet("color: green");
     }else{
         ui->prErr1->setStyleSheet("color: red");
@@ -169,7 +169,7 @@ void MainWindow::serialRead(){
     static quint16 u[6];
     if (ui->radioButton->isChecked()){
         for (quint8 i = 0; i < 6; i++){
-            if (err[i]>2)
+            if (err[i] > 1.5)
                 u[i] += pid[i].u(needRPM[i] - rpm[i]);
             if (u[i] > 2300) u[i] = 2300;
             if (u[i] < 800) u[i] = 800;
