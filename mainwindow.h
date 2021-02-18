@@ -31,9 +31,10 @@ class MainWindow : public QMainWindow
     QSerialPort *serial;
     QTcpServer *server;
     int const PORT = 48654;
-    QDataStream *stream;
-    QTcpSocket *socket;
-    //QList <QTcpSocket*> sockets;
+    QList <QDataStream *> *streams;
+    //QDataStream *stream;
+    //QTcpSocket *socket;
+    QList <QTcpSocket*> *sockets;
     QTimer *timer;
     
     QByteArray ms;
@@ -43,9 +44,10 @@ class MainWindow : public QMainWindow
     qreal nominalRpm = 1000;
     QVector <qreal> *coeff;
     qreal nEngine = 3040.0/360.0; // Коэффициент скольжения или типа того. Fr*nEngine = rpm;
-    qreal nMax = 2500; //Максимальная частота. превышение должно пресекаться
+    qreal nMax = 1700; //Максимальная частота. превышение должно пресекаться
     
-    qreal rpm[6];
+    quint16 rpm[6];
+    quint16 u[6];
     QTextStream *output = nullptr;
 
     Config* config;
@@ -55,6 +57,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     
+    void configureTcpServer();
+
+    void configureConfig();
+
 private slots:
     void timeout();
     void serialRead();
@@ -85,6 +91,8 @@ private slots:
 
     void on_spinBoxRPM_editingFinished();
 
+    void on_pushButtonStop_clicked();
+
 private:
     char crc8(const char *array, quint8 len)
     {
@@ -97,6 +105,7 @@ private:
         return crc;
     }
     Ui::MainWindow *ui;
+    void configureSerial();
 };
 
 #endif // MAINWINDOW_H

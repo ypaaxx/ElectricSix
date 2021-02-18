@@ -24,6 +24,35 @@ bool MainWindow::findArduino()
     return 0;
 }
 
+void MainWindow::configureSerial()
+{
+    serial = new QSerialPort();
+    serial->setBaudRate(QSerialPort::Baud9600);
+    serial->setDataBits(QSerialPort::Data8);
+    serial->setStopBits(QSerialPort::OneStop);
+    serial->setParity(QSerialPort::NoParity);
+    serial->setFlowControl(QSerialPort::NoFlowControl);
+}
+
+void MainWindow::configureTcpServer()
+{
+    server = new QTcpServer();
+    server->listen(QHostAddress::LocalHost, PORT);
+    connect(server, SIGNAL(newConnection()), this, SLOT(newConnect()));
+    //stream = new QDataStream();
+    sockets = new QList <QTcpSocket*>;
+    streams = new QList <QDataStream*>;
+}
+
+void MainWindow::configureConfig()
+{
+    auto param = new QMap <QString, qreal>({{"Kp", 0.03},
+                                            {"Kd", 0.02},
+                                            {"Ki", 0.015},
+                                            {"s", 8.444}});
+    config = new Config(this, param);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -36,23 +65,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ms.append(13, 0);
 
-    serial = new QSerialPort();
-    serial->setBaudRate(QSerialPort::Baud9600);
-    serial->setDataBits(QSerialPort::Data8);
-    serial->setStopBits(QSerialPort::OneStop);
-    serial->setParity(QSerialPort::NoParity);
-    serial->setFlowControl(QSerialPort::NoFlowControl);
+    configureSerial();
 
-    server = new QTcpServer();
-    server->listen(QHostAddress::LocalHost, PORT);
-    connect(server, SIGNAL(newConnection()), this, SLOT(newConnect()));
-    stream = new QDataStream();
+    configureTcpServer();
 
-    auto param = new QMap <QString, qreal>({{"Kp", 0.03},
-                                  {"Kd", 0.02},
-                                  {"Ki", 0.015},
-                                  {"s", 8.444}});
-    config = new Config(this, param);
+    configureConfig();
 
     ui->doubleSpinBox->setValue(config->kp());
     ui->doubleSpinBox_2->setValue(config->kd());
@@ -63,8 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
     Pid::changeKp(ui->doubleSpinBox->value());
     Pid::changeKd(ui->doubleSpinBox_2->value());
     Pid::changeKi(ui->doubleSpinBox_3->value());
-    Pid::setMax(2300);
-    Pid::setMin(800);
 
     needRPM[0] = ui->spinBoxRPM->value();
 
@@ -73,7 +88,6 @@ MainWindow::MainWindow(QWidget *parent) :
         timer->start();
         connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
         connect(serial, SIGNAL(readyRead()), this, SLOT(serialRead()));
-
     }
     else {
         qDebug() << "wtf arduino not found";
@@ -130,11 +144,13 @@ void MainWindow::serialRead(){
         hz[i] += mess.at(2*i + 1) & 0xFF;
         hz[i] >>= 1;
         rpm[i] = hz[i] * nEngine;
-        if (rpm[i]>nMax) stop();
+        if (rpm[i] > nMax) stop();
         qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
 
-    *stream << rpm[0];
+    for(auto stream: *streams){
+        *stream << rpm[0];
+    }
 
     ui->hz_1->setText( QString::number(hz[0]) + " Hz");
     ui->lcdNumber->display(rpm[0]);
@@ -142,10 +158,9 @@ void MainWindow::serialRead(){
     static qreal err[6];
     for (quint8 i = 0; i < 6; i++){
         err[i] = fabs(needRPM[i] - rpm[i])/needRPM[i]*100;
-        //errT[i] = fabs(pow(1 + (needRPM[i] - rpm[i])/needRPM[i], 2)*100 - 100); //Ошибка тяги по квадрату частоты
     }
     ui->prErr1->setText(QString::number(err[0], 'f', 1) + "%");
-    if(err[0] < 2)  {
+    if(err[0] < 2){
         ui->prErr1->setStyleSheet("color: green");
     }else{
         ui->prErr1->setStyleSheet("color: red");
@@ -154,11 +169,10 @@ void MainWindow::serialRead(){
     static quint16 u[6];
     if (ui->radioButton->isChecked()){
         for (quint8 i = 0; i < 6; i++){
-            if (err[i] > 2){
+            if (err[i]>2)
                 u[i] += pid[i].u(needRPM[i] - rpm[i]);
-                if (u[i] > 2300) u[i] = 2300;
-                if (u[i] < 800) u[i] = 800;
-            }
+            if (u[i] > 2300) u[i] = 2300;
+            if (u[i] < 800) u[i] = 800;
         }
     } else {
         for (quint8 i = 0; i < 6; i++)
@@ -206,14 +220,15 @@ void MainWindow::stop(){
     serial->waitForBytesWritten(300);
 
     ui->spinBoxMCS->setValue(800);
-    ui->radioButton_2->setDown(1);
+    ui->radioButton_2->setChecked(1);
 }
 
 void MainWindow::newConnect()
 {
-    socket = server->nextPendingConnection();
-    stream->setDevice(socket);
-    qDebug() << "ПОДКЛЮЧЕНИЕ TCP";
+    auto socket = server->nextPendingConnection();
+    *sockets << socket;
+    *streams << new QDataStream(socket);
+    qDebug() << "TCP!!!!!!!!!!";
 }
 
 void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
@@ -225,13 +240,20 @@ void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
 //Обнуление интегрирующей ошибки при переключении
 void MainWindow::on_radioButton_toggled(bool checked)
 {
-    if(checked)
+    if(checked){
         for(auto &p : pid)
             p.resetI();
+        u[0] = ui->spinBoxRPM->value();
+    }
 }
 
 void MainWindow::on_spinBoxRPM_editingFinished()
 {
     needRPM[0] = ui->spinBoxRPM->value();
     qDebug() << "0:" << needRPM[0] << " need";
+}
+
+void MainWindow::on_pushButtonStop_clicked()
+{
+    stop();
 }
