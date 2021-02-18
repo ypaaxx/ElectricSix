@@ -16,7 +16,15 @@ void setup() {
   while (!Serial);
 
   //Приём
-  pinMode(13, INPUT);
+  pinMode(6, INPUT);
+  pinMode(5, OUTPUT); //питание датчика rpm
+  digitalWrite(5, HIGH);
+  pinMode(4, OUTPUT);// земля датчика rpm
+  digitalWrite(4, LOW);
+  pinMode(2, OUTPUT); //питание bec
+  digitalWrite(2, HIGH);
+
+
   one.attach(3);
 }
 
@@ -25,7 +33,7 @@ void loop() {
       Если изменение произошло, то увеличивается счётчик
   */
   ocs = cs; //Значение сигнала на прошлой итерации
-  cs = digitalRead(13); //Новое значение сигнала
+  cs = digitalRead(6); //Новое значение сигнала
   c += cs ^ ocs; //Увеличение счётчика на результат сравнения
 }
 
