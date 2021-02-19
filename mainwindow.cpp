@@ -27,7 +27,7 @@ bool MainWindow::findArduino()
 void MainWindow::configureSerial()
 {
     serial = new QSerialPort();
-    serial->setBaudRate(QSerialPort::Baud115200);
+    serial->setBaudRate(QSerialPort::Baud9600);
     serial->setDataBits(QSerialPort::Data8);
     serial->setStopBits(QSerialPort::OneStop);
     serial->setParity(QSerialPort::NoParity);
@@ -118,7 +118,7 @@ MainWindow::~MainWindow()
 
 /* По срабатыванию таймера отправляет в серийный порт массив команд */
 void MainWindow::timeout(){
-    qDebug() << "timeout";
+    //qDebug() << "timeout";
     if( !serial->write(ms) )
         qDebug() << "Fail send";
 }
@@ -145,7 +145,7 @@ void MainWindow::serialRead(){
         hz[i] >>= 1;
         rpm[i] = hz[i] * nEngine;
         //if (rpm[i] > nMax) stop();
-        qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
+        //qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
 
     foreach(auto stream, *streams){
@@ -166,11 +166,11 @@ void MainWindow::serialRead(){
         ui->prErr1->setStyleSheet("color: red");
     }
 
-    static quint16 u[6];
+
     if (ui->radioButton->isChecked()){
-        for (quint8 i = 0; i < 6; i++){
-            if (err[i] > 1.5)
-                u[i] += pid[i].u(needRPM[i] - rpm[i]);
+        for (quint8 i = 0; i < 1; i++){
+            //if (err[i] > 1.5)
+                u[i] = pid[i].u(needRPM[i] - rpm[i]);
             if (u[i] > 2300) u[i] = 2300;
             if (u[i] < 800) u[i] = 800;
         }
@@ -181,7 +181,7 @@ void MainWindow::serialRead(){
     ui->label_4->setNum(u[0]);
 
     for (quint8 i = 0; i < 6; i++){
-        qDebug() <<"u[" << i << "] " << u[i];
+        //qDebug() <<"u[" << i << "] " << u[i];
         ms[i*2] = u[i] >> 8;
         ms[i*2 + 1] = u[i] & 0xFF;
     }
@@ -237,8 +237,7 @@ void MainWindow::on_radioButton_toggled(bool checked)
 {
     if(checked){
         for(auto &p : pid)
-            p.resetI();
-        u[0] = ui->spinBoxRPM->value();
+            p.reset(u[0]);
     }
 }
 

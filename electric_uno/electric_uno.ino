@@ -12,7 +12,7 @@ unsigned char buf[13];
 int INITMS = 800;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial);
 
   //Приём
@@ -23,7 +23,6 @@ void setup() {
   digitalWrite(4, LOW);
   pinMode(2, OUTPUT); //питание bec
   digitalWrite(2, HIGH);
-
 
   one.attach(3);
 }

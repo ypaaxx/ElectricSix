@@ -33,14 +33,16 @@ public slots:
 
         P = Kp * e;                 //Пропорциональный
         D = Kd * (e - e_old) / T;   //Дифференциальный
-        I += Ki * e * T / 100;      //Интегрирующий
+        I += Ki * e * T;      //Интегрирующий
 
         e_old = e;
 
         qreal u = P + D + I;
         //Ограничение сигнала
-        if (u > duMax) u = duMax;
-        if (u < -duMax) u = -duMax;
+//        if (u > 2300) u = 2300;
+//        if (u < 800) u = 800;
+
+        qDebug() << e << P << I << D << u;
         return u;
     }
 
@@ -49,8 +51,10 @@ public slots:
     static void changeKi(qreal ki){Ki=ki;}
     static void setDuMax(qreal _duMax){duMax=_duMax;}
 
-    void resetI(){
-        I = 0;
+    void reset(qreal u){
+        I = u;
+        P = 0;
+        D = 0;
     }
 };
 
