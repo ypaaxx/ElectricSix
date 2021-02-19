@@ -13,8 +13,7 @@ class Pid : public QObject
     static qreal Kd;
     static qreal Ki;
 
-    static qreal uMax;
-    static qreal uMin;
+    static qreal duMax;
 
     const qreal T = 1; //s
 
@@ -40,16 +39,16 @@ public slots:
 
         qreal u = P + D + I;
         //Ограничение сигнала
-        if (u > uMax) u = uMax;
-        if (u < uMin) u = uMin;
+        if (u > duMax) u = duMax;
+        if (u < -duMax) u = -duMax;
         return u;
     }
 
     static void changeKp(qreal kp){Kp=kp;}
     static void changeKd(qreal kd){Kd=kd;}
     static void changeKi(qreal ki){Ki=ki;}
-    static void setMax(qreal _uMax){uMax=_uMax;}
-    static void setMin(qreal _uMin){uMin=_uMin;}
+    static void setDuMax(qreal _duMax){duMax=_duMax;}
+
     void resetI(){
         I = 0;
     }

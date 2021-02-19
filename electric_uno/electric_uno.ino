@@ -12,7 +12,7 @@ unsigned char buf[13];
 int INITMS = 800;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial);
 
   //Приём
@@ -39,18 +39,11 @@ void loop() {
 
 void serialEvent() {
 
-  if (Serial.available() < 13) return;
+  //if (Serial.available() < 13) return;
   Serial.readBytes(message, 13);
   while ( Serial.available() > 0 ) {
     Serial.read();
   }
-
-  if (message[12] != (byte) crc8(message, 12)) return;
-
-  //Устанавливаются микросекунды на сервах
-  ms = message[0] << 8;
-  ms += message[1] & 0xFF;
-
 
   //Присваиваем новые значения
   one.writeMicroseconds(ms);
@@ -62,7 +55,12 @@ void serialEvent() {
   buf[12] = crc8(buf, 12);
 
   Serial.write(buf, 13);
+  if (message[12] != (byte) crc8(message, 12)) return;
 
+  //Устанавливаются микросекунды на сервах
+  ms = message[0] << 8;
+  ms += message[1] & 0xFF;
+  
   //Обнуление счётчиков
   c = 0;
 

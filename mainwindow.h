@@ -7,8 +7,10 @@
 
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+
 #include <QTcpServer>
 #include <QTcpSocket>
+
 #include <QDebug>
 #include <QTimer>
 #include <QByteArray>
@@ -32,8 +34,6 @@ class MainWindow : public QMainWindow
     QTcpServer *server;
     int const PORT = 48654;
     QList <QDataStream *> *streams;
-    //QDataStream *stream;
-    //QTcpSocket *socket;
     QList <QTcpSocket*> *sockets;
     QTimer *timer;
     
@@ -68,8 +68,6 @@ private slots:
     void on_doubleSpinBox_valueChanged(double arg1);
     void on_doubleSpinBox_2_valueChanged(double arg1);
     void on_doubleSpinBox_3_valueChanged(double arg1);
-    
-    void on_spinBox_editingFinished();
 
     void start(){
         timer->stop(); //приостановка действующего таймера

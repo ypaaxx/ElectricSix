@@ -3,8 +3,7 @@
 qreal Pid::Kp = 0;
 qreal Pid::Kd = 0;
 qreal Pid::Ki = 0;
-qreal Pid::uMax = 100;
-qreal Pid::uMin = -100;
+qreal Pid::duMax = 100;
 
 Pid::Pid(QObject *parent) : QObject(parent)
 {

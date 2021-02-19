@@ -27,7 +27,7 @@ bool MainWindow::findArduino()
 void MainWindow::configureSerial()
 {
     serial = new QSerialPort();
-    serial->setBaudRate(QSerialPort::Baud9600);
+    serial->setBaudRate(QSerialPort::Baud115200);
     serial->setDataBits(QSerialPort::Data8);
     serial->setStopBits(QSerialPort::OneStop);
     serial->setParity(QSerialPort::NoParity);
@@ -148,7 +148,7 @@ void MainWindow::serialRead(){
         qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
 
-    for(auto stream: *streams){
+    foreach(auto stream, *streams){
         *stream << rpm[0];
     }
 
@@ -205,11 +205,6 @@ void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
     config->setKi(arg1);
 }
 
-void MainWindow::on_spinBox_editingFinished()
-{
-    nominalRpm = ui->spinBoxRPM->value();
-}
-
 void MainWindow::stop(){
     for(quint8 i = 0; i<12;){   //Остановка всех двигателей
         ms[i++] = 800 >> 8;
@@ -249,7 +244,8 @@ void MainWindow::on_radioButton_toggled(bool checked)
 
 void MainWindow::on_spinBoxRPM_editingFinished()
 {
-    needRPM[0] = ui->spinBoxRPM->value();
+    nominalRpm = ui->spinBoxRPM->value();
+    needRPM[0] = nominalRpm;
     qDebug() << "0:" << needRPM[0] << " need";
 }
 
