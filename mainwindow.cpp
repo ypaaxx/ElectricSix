@@ -16,11 +16,13 @@ bool MainWindow::findArduino()
                     || (port.vendorIdentifier() == 0x1A86)){
                 qDebug() << "Base found on" << port.portName();
                 serial->setPort(port);
+                ui->statusBar->showMessage("Base found on" + port.portName());
                 return serial->open(QIODevice::ReadWrite);
             }
         }
     }
     //Происходит если ничего не нашёл
+    ui->statusBar->showMessage("Не нашлась Arduino");
     return 0;
 }
 
@@ -39,9 +41,8 @@ void MainWindow::configureTcpServer()
     server = new QTcpServer();
     server->listen(QHostAddress::LocalHost, PORT);
     connect(server, SIGNAL(newConnection()), this, SLOT(newConnect()));
-    //stream = new QDataStream();
-    sockets = new QList <QTcpSocket*>;
-    streams = new QList <QDataStream*>;
+    sockets = new QList <QTcpSocket *>;
+    streams = new QList <QDataStream *>;
 }
 
 void MainWindow::configureConfig()
@@ -58,11 +59,25 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     setWindowTitle("ElectricUno");
+
+    ui->table->setColumnCount(4);
+    ui->table->setRowCount(6);
+    ui->table->verticalHeader()->show();
+    ui->table->horizontalHeader()->show();
+    for(int i = 0; i < ui->table->columnCount(); i++){
+        for(int j = 0; j < ui->table->rowCount(); j++){
+            ui->table->setItem(j, i, new QTableWidgetItem(0));
+        }
+    }
+
+
     timer = new QTimer();
     timer->setInterval(1000);
 
+    ui->table->setHorizontalHeaderLabels(header);
+    ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->table->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ms.append(13, 0);
 
     configureSerial();
@@ -99,16 +114,10 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     /* Происходит остановка всех двигателей, закрытие файлов */
+
+    stop();
     timer->stop();
-    
-    for(quint8 i = 0; i<12;){   //Остановка всех двигателей при выходе из программы
-        ms[i++] = 800 >> 8;
-        ms[i++] = 800 & 0xFF;
-    }
-    ms[12] = crc8(ms, 12);
-    serial->write(ms);
-    serial->waitForBytesWritten(300);
-    
+
     if(output != nullptr) output->device()->close();
     config->close();
     qDebug() << "Exit";
@@ -144,6 +153,8 @@ void MainWindow::serialRead(){
         hz[i] += mess.at(2*i + 1) & 0xFF;
         hz[i] >>= 1;
         rpm[i] = hz[i] * nEngine;
+        ui->table->item(i, 0)->setText(QString::number(rpm[i]));
+        ui->table->item(i, 1)->setText(QString::number(hz[i]));
         //if (rpm[i] > nMax) stop();
         //qDebug() << "i:" << i << hz[i] << "Hz " << rpm[i] << "rpm ";
     }
@@ -158,6 +169,7 @@ void MainWindow::serialRead(){
     static qreal err[6];
     for (quint8 i = 0; i < 6; i++){
         err[i] = fabs(needRPM[i] - rpm[i])/needRPM[i]*100;
+        ui->table->item(i, 2)->setText(QString::number(err[i], 'f', 1) + "%");
     }
     ui->prErr1->setText(QString::number(err[0], 'f', 1) + "%");
     if(err[0] < 1.5){
@@ -168,15 +180,18 @@ void MainWindow::serialRead(){
 
 
     if (ui->radioButton->isChecked()){
-        for (quint8 i = 0; i < 1; i++){
+        for (quint8 i = 0; i < 6; i++){
             //if (err[i] > 1.5)
-                u[i] = pid[i].u(needRPM[i] - rpm[i]);
+            u[i] = pid[i].u(needRPM[i] - rpm[i]);
             if (u[i] > 2300) u[i] = 2300;
             if (u[i] < 800) u[i] = 800;
+            ui->table->item(i, 3)->setText(QString::number(u[i]));
         }
     } else {
-        for (quint8 i = 0; i < 6; i++)
+        for (quint8 i = 0; i < 6; i++){
             u[i] = ui->spinBoxMCS->value();
+            ui->table->item(i, 3)->setText(QString::number(u[i]));
+        }
     }
     ui->label_4->setNum(u[0]);
 
@@ -206,16 +221,15 @@ void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
 }
 
 void MainWindow::stop(){
+    ui->spinBoxMCS->setValue(800);
+    ui->radioButton_2->setChecked(1);
     for(quint8 i = 0; i<12;){   //Остановка всех двигателей
         ms[i++] = 800 >> 8;
         ms[i++] = 800 & 0xFF;
     }
-    ms[12] = crc8(ms, 12);
+    ms[12] = crc8(ms.data(), 12);
     serial->write(ms);
-    serial->waitForBytesWritten(300);
-
-    ui->spinBoxMCS->setValue(800);
-    ui->radioButton_2->setChecked(1);
+    serial->waitForBytesWritten();
 }
 
 void MainWindow::newConnect()
@@ -236,16 +250,19 @@ void MainWindow::on_doubleSpinBox_engine_n_valueChanged(double arg1)
 void MainWindow::on_radioButton_toggled(bool checked)
 {
     if(checked){
-        for(auto &p : pid)
-            p.reset(u[0]);
+        for(quint8 i = 0; i < 6; i++)
+            pid[i].reset(u[i]);
     }
+
 }
 
 void MainWindow::on_spinBoxRPM_editingFinished()
 {
     nominalRpm = ui->spinBoxRPM->value();
-    needRPM[0] = nominalRpm;
-    qDebug() << "0:" << needRPM[0] << " need";
+    for(quint8 i = 0; i < 6; i++){
+        needRPM[i] = nominalRpm;
+        qDebug() << "0:" << needRPM[i] << " need";
+    }
 }
 
 void MainWindow::on_pushButtonStop_clicked()

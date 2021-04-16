@@ -11,6 +11,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
+#include <QTableWidget>
 #include <QDebug>
 #include <QTimer>
 #include <QByteArray>
@@ -49,6 +50,8 @@ class MainWindow : public QMainWindow
     quint16 rpm[6];
     quint16 u[6];
     QTextStream *output = nullptr;
+
+    QStringList header = {"об/мин", "hz", "err", "mcs"};
 
     Config* config;
 public:
