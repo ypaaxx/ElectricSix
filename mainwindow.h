@@ -67,6 +67,7 @@ public:
 private slots:
     void timeout();
     void serialRead();
+    void cellChanged(int, int);
     
     void on_doubleSpinBox_valueChanged(double arg1);
     void on_doubleSpinBox_2_valueChanged(double arg1);
@@ -94,6 +95,8 @@ private slots:
 
     void on_pushButtonStop_clicked();
 
+    void on_spinBoxMCS_editingFinished();
+
 private:
     char crc8(const char *array, quint8 len)
     {
@@ -107,6 +110,7 @@ private:
     }
     Ui::MainWindow *ui;
     void configureSerial();
+    void configureTable();
 };
 
 #endif // MAINWINDOW_H

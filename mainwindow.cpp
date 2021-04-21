@@ -14,7 +14,7 @@ bool MainWindow::findArduino()
         if ( port.hasVendorIdentifier() ){
             if ((port.vendorIdentifier() == 0x2341)
                     || (port.vendorIdentifier() == 0x1A86)){
-                qDebug() << "Base found on" << port.portName();
+                qDebug() << "Base found on " << port.portName();
                 serial->setPort(port);
                 ui->statusBar->showMessage("Base found on" + port.portName());
                 return serial->open(QIODevice::ReadWrite);
@@ -54,6 +54,25 @@ void MainWindow::configureConfig()
     config = new Config(this, param);
 }
 
+
+void MainWindow::configureTable()
+{
+    auto table = ui->table;
+    table->setColumnCount(4);
+    table->setRowCount(6);
+    table->verticalHeader()->show();
+    table->horizontalHeader()->show();
+    table->setHorizontalHeaderLabels(header);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    for(int i = 0; i < table->columnCount(); i++){
+        for(int j = 0; j < table->rowCount(); j++){
+            table->setItem(j, i, new QTableWidgetItem(0));
+            connect(table, SIGNAL(cellChanged(int, int)), this, SLOT(cellChanged(int, int)));
+        }
+    }
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -61,29 +80,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setWindowTitle("ElectricUno");
 
-    ui->table->setColumnCount(4);
-    ui->table->setRowCount(6);
-    ui->table->verticalHeader()->show();
-    ui->table->horizontalHeader()->show();
-    for(int i = 0; i < ui->table->columnCount(); i++){
-        for(int j = 0; j < ui->table->rowCount(); j++){
-            ui->table->setItem(j, i, new QTableWidgetItem(0));
-        }
-    }
-
+    // Настройка таблицы
+    configureTable();
 
     timer = new QTimer();
     timer->setInterval(1000);
 
-    ui->table->setHorizontalHeaderLabels(header);
-    ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->table->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
     ms.append(13, 0);
 
     configureSerial();
-
     configureTcpServer();
-
     configureConfig();
 
     ui->doubleSpinBox->setValue(config->kp());
@@ -107,9 +114,7 @@ MainWindow::MainWindow(QWidget *parent) :
     else {
         qDebug() << "wtf arduino not found";
     }
-
 }
-
 
 MainWindow::~MainWindow()
 {
@@ -181,7 +186,6 @@ void MainWindow::serialRead(){
 
     if (ui->radioButton->isChecked()){
         for (quint8 i = 0; i < 6; i++){
-            //if (err[i] > 1.5)
             u[i] = pid[i].u(needRPM[i] - rpm[i]);
             if (u[i] > 2300) u[i] = 2300;
             if (u[i] < 800) u[i] = 800;
@@ -189,7 +193,6 @@ void MainWindow::serialRead(){
         }
     } else {
         for (quint8 i = 0; i < 6; i++){
-            u[i] = ui->spinBoxMCS->value();
             ui->table->item(i, 3)->setText(QString::number(u[i]));
         }
     }
@@ -201,6 +204,17 @@ void MainWindow::serialRead(){
         ms[i*2 + 1] = u[i] & 0xFF;
     }
     ms[12] = crc8(ms.data(), 12);
+}
+
+void MainWindow::cellChanged(int r, int s)
+{
+    //изменение mcs
+    if (r == 3){
+        u[s] = ui->table->itemAt(r, s)->text().toInt();
+        return;
+    }else if(r == 0){
+        needRPM[s] = ui->table->itemAt(r, s)->text().toInt();
+    }
 }
 
 //Изменение параметров регулятора
@@ -253,7 +267,6 @@ void MainWindow::on_radioButton_toggled(bool checked)
         for(quint8 i = 0; i < 6; i++)
             pid[i].reset(u[i]);
     }
-
 }
 
 void MainWindow::on_spinBoxRPM_editingFinished()
@@ -261,11 +274,18 @@ void MainWindow::on_spinBoxRPM_editingFinished()
     nominalRpm = ui->spinBoxRPM->value();
     for(quint8 i = 0; i < 6; i++){
         needRPM[i] = nominalRpm;
-        qDebug() << "0:" << needRPM[i] << " need";
+        //qDebug() << needRPM[i] << " need";
     }
 }
 
 void MainWindow::on_pushButtonStop_clicked()
 {
     stop();
+}
+
+// Изменение значений mcs по завершению редактирования
+void MainWindow::on_spinBoxMCS_editingFinished()
+{
+    for (quint8 i = 0; i < 6; i++)
+        u[i] = ui->spinBoxMCS->value();
 }
